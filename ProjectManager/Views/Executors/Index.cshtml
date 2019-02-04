@@ -1,0 +1,39 @@
+﻿@model IEnumerable<ProjectManager.Models.Executors>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Users.FirstName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Projects.Name)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Users.FirstName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Projects.Name)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.ExecutorID }) |
+            @Html.ActionLink("Details", "Details", new { id=item.ExecutorID }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.ExecutorID })
+        </td>
+    </tr>
+}
+
+</table>
