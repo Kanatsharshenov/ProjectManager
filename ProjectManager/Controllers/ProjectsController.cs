@@ -272,9 +272,7 @@ namespace ProjectManager.Controllers
             if (db.Projects.Count() != 0)
             {
                 maxPriority = db.Projects.Max(c => c.Priority);
-            }
-            
-            
+            }            
                 return Json(++maxPriority, JsonRequestBehavior.AllowGet);            
         }
         // Отслеживаем, чтобы введенное на страницах "Создание" и "Редактирование" проектов, поле "Приоритет" был последовательным.
@@ -294,6 +292,17 @@ namespace ProjectManager.Controllers
                 }
             }
             return Json(true, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult IsEmptyBase()
+        {
+            if (db.Projects.Count() == 0)
+            {
+                return Json(true, JsonRequestBehavior.AllowGet);
+            }else
+            {
+                return Json(false, JsonRequestBehavior.AllowGet);
+            }
         }
 
         protected override void Dispose(bool disposing)

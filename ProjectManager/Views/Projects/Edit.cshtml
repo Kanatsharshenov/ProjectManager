@@ -4,9 +4,6 @@
     ViewBag.Title = "Edit";
 }
 
-
-
-
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
@@ -102,8 +99,7 @@
 
     function checkPriority() {
         var securityToken = $('[name=__RequestVerificationToken]').val();
-        var pr = $("#Priority").val();
-        //var projectId = $("#ProjectID").val();
+        var pr = $("#Priority").val();        
         var serviceURL = '/Projects/CheckPriority';
         $.ajax({
             type: "GET",
@@ -133,9 +129,6 @@
             alert('error');
         }
     }
-
-
-
 
     $("body").on("click", "#save", function (event) {
         checkPriority();

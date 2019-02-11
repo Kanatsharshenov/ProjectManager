@@ -39,22 +39,19 @@
 
     $("body").on("click", ".add_to_project", function (event) {
         var parentBlock = $(this).parent();
-        event.preventDefault();
-        //$(".dropdown").clone().appendTo(".executors-table").fadeIn("slow");
-        // получаем выбранный id
+        event.preventDefault();        
         var projectId = $("#ProjectID").val();
         var securityToken = $('[name=__RequestVerificationToken]').val();
         $.ajax({
             type: 'GET',
-            data: { projectId:projectId },
+            data: { projectId: projectId },
             url: '/Projects/GetItems',
-            success: function (data) {                
-                $('.dropdown').html(data).fadeIn("slow");                
+            success: function (data) {
+                $('.dropdown').html(data).fadeIn("slow");
             },
-            error: function (data) {               
-            
-            alert("Error");
-        }
+            error: function (data) {
+                alert("Error");
+            }
         });
 
         $(".add_to_project").fadeOut("slow");
@@ -63,14 +60,6 @@
     $("body").on("click", ".add", function (event) {
         var parentBlock = $(this).parent();
         event.preventDefault();
-        
-            /*var testData =
-                {
-                    'UserID': $("#selected-user").val(),
-                    'ProjectID': $("#ProjectID").val(),
-                    '__RequestVerificationToken': $('[name=__RequestVerificationToken]').val()
-                };*/
-
             $.ajax({
                 type: "POST",
                 url: "/Executors/Create",
@@ -86,10 +75,9 @@
             
             var FullName = $("#dropdown option:selected").text();
             var id = $("#dropdown option:selected").val();
-           // $("#dropdown").fadeOut("slow");
             $("#dropdown").html('');
             $(".add").fadeOut("slow");
-            //$('.executors-table tr:last').clone().appendTo('.executors-table').fadeIn("slow");
+            
             $('.executors-table').append('<tr><td><input id=' + "id_executor" + 'name=' + "id_executor" + ' type= ' + "hidden " + 'value= ' + id + '/>' +
                                 '<a href= ' + "/Users/Details/" + id + ' >' + FullName + '</a> ' +
                                 '<a class= ' + "del_from_project " + 'style = "color:red" data=' + data.id + ' href=' + "/Projects/Details/" + id + ' >Удалить из проекта</a> ' +
@@ -100,10 +88,6 @@
         function errorFunc(errorData) {
             alert('Ошибка' + errorData.responseText);
         }
-
-        
-        //$('.executors-table tr:last').text = FullName;
-        //$('.executors-table tr:last').text = selectedValue;
     });
 
 </script>

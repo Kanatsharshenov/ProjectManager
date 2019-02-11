@@ -74,15 +74,11 @@
     $("body").on("change", "#searchBy", function (event) {
         if (this.value == "Дата начала" || this.value == "Дата окончания") {
             $("[name=filter]").fadeOut("slow");
-            //$("#searchContainer").addClass("col-sm-9").removeClass("col-sm-5");
             $("#findDate").fadeIn("slow");
-            
         }
         if (this.value == "Наименование" || this.value == "Заказчик" || this.value == "Исполнитель") {
             $("[name=filter]").fadeIn("slow");            
             $("#findDate").fadeOut("slow");
-            //$("#searchContainer").addClass("col-sm-5").removeClass("col-sm-9");
-            
         }
     })
 

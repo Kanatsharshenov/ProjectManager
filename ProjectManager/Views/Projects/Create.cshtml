@@ -100,8 +100,7 @@
 <script type="text/javascript">
     $(document).ready(function () {
         var securityToken = $('[name=__RequestVerificationToken]').val();
-        var id = $("#Priority").val();
-        //var projectId = $("#ProjectID").val();
+        var id = $("#Priority").val();        
         var serviceURL = '/Projects/GetMaxPriority';
         $.ajax({
             type: "GET",
@@ -123,13 +122,35 @@
     });
 
     $("body").on("change", "#Priority", function (event) {
-        checkPriority();
+        var securityToken = $('[name=__RequestVerificationToken]').val();
+        var serviceURL = '/Projects/IsEmptyBase';
+        $.ajax({
+            type: "GET",
+            url: serviceURL,
+            data: { __RequestVerificationToken: securityToken },
+            contentType: "application/x-www-form-urlencoded",
+            dataType: "json",
+            success: successFunc,
+            error: errorFunc
+        });
+
+        function successFunc(data, status) {
+            if (data == true && $("#Priority").val() > 1) {
+                $("#attention_new_base").remove();
+                $('#Priority').after('<span id="attention_new_base" class="text-danger">Значение приоритета первой записи должна быть равна - 1</span>');
+            } else {
+                $("#attention_new_base").remove();
+                checkPriority();
+            }
+        }
+        function errorFunc() {
+            alert('error');
+        }
     })
 
     function checkPriority(){
         var securityToken = $('[name=__RequestVerificationToken]').val();
-        var pr = $("#Priority").val();
-        //var projectId = $("#ProjectID").val();
+        var pr = $("#Priority").val();        
         var serviceURL = '/Projects/CheckPriority';
         $.ajax({
             type: "GET",
@@ -159,48 +180,11 @@
             alert('error');
         }
     }
-        
-    
-    
 
     $("body").on("click", "#save", function (event) {
         checkPriority();
-        if ($('*').is('#attention')) {
+        if ($('*').is('#attention') || $('*').is('#attention_new_base')) {
             return false;
-        }
-    })
-
-    /*function isExistsPriority(){
-        var securityToken = $('[name=__RequestVerificationToken]').val();
-        var id = $("#Priority").val();
-        //var projectId = $("#ProjectID").val();
-        var serviceURL = '/Projects/IsPriorityExists';
-        $.ajax({
-            type: "GET",
-            url: serviceURL,
-            data: { priority: id,  __RequestVerificationToken: securityToken },
-            contentType: "application/x-www-form-urlencoded",
-            dataType: "json",
-            success: successFunc,
-            error: errorFunc
-        });
-
-        function successFunc(data, status) {
-            if (data == false) {
-                if ($('*').is('#attention')) {
-                    $("#attention").remove();
-                    $('#Priority').after('<span id="attention" class="text-danger">Пожалуйста, исправьте ошибку</span>');
-                } else {
-                    $('#Priority').after('<span id="attention" class="text-danger">Пожалуйста, исправьте ошибку</span>');
-                }
-                return false;
-            } else {
-                $("#attention").remove();
-            }
-        }
-
-        function errorFunc() {
-            alert('error');
-        }
-    }*/
+        }        
+    })    
 </script>
