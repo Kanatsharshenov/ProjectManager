@@ -268,7 +268,12 @@ namespace ProjectManager.Controllers
         // Находим максимальное значение поля "Приоритет".
         public JsonResult GetMaxPriority()
         {
-            int maxPriority = db.Projects.Max(c => c.Priority);
+            int maxPriority = 0;
+            if (db.Projects.Count() != 0)
+            {
+                maxPriority = db.Projects.Max(c => c.Priority);
+            }
+            
             
                 return Json(++maxPriority, JsonRequestBehavior.AllowGet);            
         }
@@ -276,15 +281,19 @@ namespace ProjectManager.Controllers
         // Сделано для правильной логики уменьшения или увеличивания приоритета.
         public JsonResult CheckPriority(int pr)
         {
-            int maxPriority = db.Projects.Max(c => c.Priority);
-            if(pr - maxPriority > 1)
+            if (db.Projects.Count() != 0)
             {
-                return Json(new { res = false, max = maxPriority }, JsonRequestBehavior.AllowGet);
-            } else
-            {
-                return Json(true, JsonRequestBehavior.AllowGet);
+                int maxPriority = db.Projects.Max(c => c.Priority);
+                if (pr - maxPriority > 1)
+                {
+                    return Json(new { res = false, max = maxPriority }, JsonRequestBehavior.AllowGet);
+                }
+                else
+                {
+                    return Json(true, JsonRequestBehavior.AllowGet);
+                }
             }
-            
+            return Json(true, JsonRequestBehavior.AllowGet);
         }
 
         protected override void Dispose(bool disposing)
