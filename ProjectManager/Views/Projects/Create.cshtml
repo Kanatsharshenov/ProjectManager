@@ -4,7 +4,7 @@
     ViewBag.Title = "Create";
 }
 
-<h2>Create</h2>
+<h2>Создание</h2>
 
 
 @using (Html.BeginForm()) 
@@ -12,11 +12,11 @@
     @Html.AntiForgeryToken()
     
     <div class="form-horizontal">
-        <h4>Projects</h4>
+        <h4>Проект</h4>
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         <div class="form-group">
-            @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+            <b class="control-label col-md-2">Имя</b>
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
@@ -24,7 +24,7 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Customer, htmlAttributes: new { @class = "control-label col-md-2" })
+            <b class="control-label col-md-2">Заказчик</b>
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Customer, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.Customer, "", new { @class = "text-danger" })
@@ -32,7 +32,7 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Executor, htmlAttributes: new { @class = "control-label col-md-2" })
+            <b class="control-label col-md-2">Исполнитель</b>
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Executor, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.Executor, "", new { @class = "text-danger" })
@@ -40,7 +40,7 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.UserID, "UserID", htmlAttributes: new { @class = "control-label col-md-2" })
+            <b class="control-label col-md-2">Руководитель проекта</b>
             <div class="col-md-10">
                 @Html.DropDownList("UserID", null, htmlAttributes: new { @class = "form-control" })
                 @Html.ValidationMessageFor(model => model.UserID, "", new { @class = "text-danger" })
@@ -48,7 +48,7 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.BeginDate, htmlAttributes: new { @class = "control-label col-md-2" })
+            <b class="control-label col-md-2">Дата начала</b>
             <div class="col-md-10">
                 @Html.EditorFor(model => model.BeginDate, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.BeginDate, "", new { @class = "text-danger" })
@@ -56,7 +56,7 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.EndDate, htmlAttributes: new { @class = "control-label col-md-2" })
+            <b class="control-label col-md-2">Дата окончания</b>
             <div class="col-md-10">
                 @Html.EditorFor(model => model.EndDate, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.EndDate, "", new { @class = "text-danger" })
@@ -64,7 +64,7 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Priority, htmlAttributes: new { @class = "control-label col-md-2" })
+            <b class="control-label col-md-2">Приоритет</b>
             <div class="col-md-10">
                 @Html.EditorFor(model => model.Priority, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.Priority, "", new { @class = "text-danger" })
@@ -72,25 +72,135 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Text, htmlAttributes: new { @class = "control-label col-md-2" })
+            <b class="control-label col-md-2">Описание</b>
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Text, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.TextAreaFor(model => model.Text, 10, 50, new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.Text, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
+                <input type="submit" id="save" value="Создать" class="btn btn-default" />
             </div>
         </div>
     </div>
 }
 
 <div>
-    @Html.ActionLink("Back to List", "Index")
+    @Html.ActionLink("Назад", "Index")
 </div>
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
 }
+
+@Scripts.Render("~/Scripts/jquery-2.2.0.js")
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var securityToken = $('[name=__RequestVerificationToken]').val();
+        var id = $("#Priority").val();
+        //var projectId = $("#ProjectID").val();
+        var serviceURL = '/Projects/GetMaxPriority';
+        $.ajax({
+            type: "GET",
+            url: serviceURL,
+            data: { __RequestVerificationToken: securityToken },
+            contentType: "application/x-www-form-urlencoded",
+            dataType: "json",
+            success: successFunc,
+            error: errorFunc
+        });
+
+        function successFunc(data, status) {            
+            $("#Priority").val(data);
+        }
+
+        function errorFunc() {
+            alert('error');
+        }
+    });
+
+    $("body").on("change", "#Priority", function (event) {
+        checkPriority();
+    })
+
+    function checkPriority(){
+        var securityToken = $('[name=__RequestVerificationToken]').val();
+        var pr = $("#Priority").val();
+        //var projectId = $("#ProjectID").val();
+        var serviceURL = '/Projects/CheckPriority';
+        $.ajax({
+            type: "GET",
+            url: serviceURL,
+            data: { pr: pr,  __RequestVerificationToken: securityToken },
+            contentType: "application/x-www-form-urlencoded",
+            dataType: "json",
+            success: successFunc,
+            error: errorFunc
+        });
+
+        function successFunc(data, status) {
+            if (data.res == false) {
+                if ($('*').is('#attention')) {
+                    $("#attention").remove();
+                    $('#Priority').after('<span id="attention" class="text-danger">Последнее значение приоритета ' + data.max + '. Укажите значение на 1 больше.</span>');
+                } else {
+                    $('#Priority').after('<span id="attention" class="text-danger">Последнее значение приоритета ' + data.max + '. Укажите значение на 1 больше.</span>');
+                }
+                return false;
+            } else {
+                $("#attention").remove();
+            }
+        }
+
+        function errorFunc() {
+            alert('error');
+        }
+    }
+        
+    
+    
+
+    $("body").on("click", "#save", function (event) {
+        checkPriority();
+        if ($('*').is('#attention')) {
+            return false;
+        }
+    })
+
+    /*function isExistsPriority(){
+        var securityToken = $('[name=__RequestVerificationToken]').val();
+        var id = $("#Priority").val();
+        //var projectId = $("#ProjectID").val();
+        var serviceURL = '/Projects/IsPriorityExists';
+        $.ajax({
+            type: "GET",
+            url: serviceURL,
+            data: { priority: id,  __RequestVerificationToken: securityToken },
+            contentType: "application/x-www-form-urlencoded",
+            dataType: "json",
+            success: successFunc,
+            error: errorFunc
+        });
+
+        function successFunc(data, status) {
+            if (data == false) {
+                if ($('*').is('#attention')) {
+                    $("#attention").remove();
+                    $('#Priority').after('<span id="attention" class="text-danger">Пожалуйста, исправьте ошибку</span>');
+                } else {
+                    $('#Priority').after('<span id="attention" class="text-danger">Пожалуйста, исправьте ошибку</span>');
+                }
+                return false;
+            } else {
+                $("#attention").remove();
+            }
+        }
+
+        function errorFunc() {
+            alert('error');
+        }
+    }*/
+</script>

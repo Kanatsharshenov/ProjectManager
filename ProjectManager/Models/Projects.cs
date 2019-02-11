@@ -11,7 +11,9 @@ namespace ProjectManager.Models
 {
     using System;
     using System.Collections.Generic;
-    
+    using System.ComponentModel.DataAnnotations;
+    using System.Web.Mvc;
+
     public partial class Projects
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
@@ -25,8 +27,13 @@ namespace ProjectManager.Models
         public string Customer { get; set; }
         public string Executor { get; set; }
         public int UserID { get; set; }
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public System.DateTime BeginDate { get; set; }
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public System.DateTime EndDate { get; set; }
+        [Remote("IsPositive", "Projects", ErrorMessage = "Enter positive number!")]        
         public int Priority { get; set; }
         public string Text { get; set; }
     

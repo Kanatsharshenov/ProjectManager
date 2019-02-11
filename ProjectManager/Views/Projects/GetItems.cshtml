@@ -1,9 +1,11 @@
 ﻿
 @model IEnumerable<ProjectManager.Models.Users>
-<select class="form-control" id="dropdown" name="dropdown">
+<div id="dropdown">
+<select class="form-control" id="selected-user">
     @foreach (var item in Model)
     {
         <option value="@item.UserID">@item.FullName</option>
     }
 </select>
 <a class="add" href="#">Добавить в проект</a>
+</div>

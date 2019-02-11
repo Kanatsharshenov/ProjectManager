@@ -68,7 +68,7 @@ namespace ProjectManager.Controllers
             return View(executors);*/
             return Json(new
             {
-                result = res
+                result = res, id = executors.ExecutorID
             }, JsonRequestBehavior.AllowGet);
         }
 

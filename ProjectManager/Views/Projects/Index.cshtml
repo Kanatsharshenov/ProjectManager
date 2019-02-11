@@ -1,75 +1,165 @@
-﻿@model IEnumerable<ProjectManager.Models.Projects>
-
-@{
-    ViewBag.Title = "Index";
+﻿@{
+    
+    AjaxOptions ajax = new AjaxOptions
+    {
+        UpdateTargetId = "projectsList",
+        Url = Url.Action("GetProjects")
+    };
 }
 
-<h2>Index</h2>
+<!DOCTYPE html>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Customer)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Executor)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.BeginDate)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.EndDate)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Priority)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Text)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Users.FirstName)
-        </th>
-        <th></th>
-    </tr>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Programmers</title>
+    <script src="~/Scripts/jquery-2.2.0.min.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />    
+</head>
+<body>
+    <h2>Проекты</h2>
+    <p>
+        @Html.ActionLink("Создать", "Create")
+    </p>
+    <div>
+        @using (Ajax.BeginForm(ajax))
+        {
+            <div class="row" id="find">
+                <div class="col-sm-9 input-group" id="searchContainer">
+                    <div style="display:none" id="findDate">
+                        <label>C:</label>&nbsp;
+                        <input type="date" name="filterBeginDate"  class="form-control" />
+                        <label>ПО:</label>&nbsp;
+                        <input type="date" name="filterEndDate"  class="form-control" />
+                        <input hidden name="sortParam" value="" id="id-sortParam" />
+                    </div>
+                    <input type="text" name="filter" value="@ViewBag.filter" class="form-control" placeholder="Введите имя для поиска..." />
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-info" id="bntSearch">Найти</button>&nbsp;
+                        <b>Поиск по полю : </b>
+                        @Html.DropDownList("searchBy", new SelectList(
+            new[] { "Наименование", "Заказчик", "Исполнитель", "Дата начала", "Дата окончания" }), new { @class = "form-control" })
+                    </span>
+                    
+                </div>
+            </div>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Name)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Customer)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Executor)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.BeginDate)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.EndDate)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Priority)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Text)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Users.FirstName)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.ProjectID }) |
-            @Html.ActionLink("Details", "Details", new { id=item.ProjectID }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.ProjectID })
-        </td>
-    </tr>
-}
+            <div class="row" id="programmersTable">
+                <div class="col-sm-12">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th><a href="javascript:void(0)" data-item="name_desc" id="nameRef">Наименование проекта</a></th>
+                                <th><a href="javascript:void(0)" data-item="customer_desc" id="customerRef">Заказчик</a></th>
+                                <th><a href="javascript:void(0)" data-item="executor_desc" id="executorRef">Исполнитель</a></th>
+                                <th><a href="javascript:void(0)" data-item="date_begin_desc" id="dateBeginRef">Дата старта</a></th>
+                                <th><a href="javascript:void(0)" data-item="date_end_desc" id="dateEndRef">Дата окончания</a></th>
+                                <th><a href="javascript:void(0)" data-item="priority_desc" id="priorityRef">Приоритет</a></th>
+                                <th><a href="javascript:void(0)" data-item="head_desc" id="headRef">Ответственный</a></th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectsList">
+                            @Html.Action("GetProjects")
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+    
+</body>
+</html>
+<script type="text/javascript">
+    $("body").on("change", "#searchBy", function (event) {
+        if (this.value == "Дата начала" || this.value == "Дата окончания") {
+            $("[name=filter]").fadeOut("slow");
+            //$("#searchContainer").addClass("col-sm-9").removeClass("col-sm-5");
+            $("#findDate").fadeIn("slow");
+            
+        }
+        if (this.value == "Наименование" || this.value == "Заказчик" || this.value == "Исполнитель") {
+            $("[name=filter]").fadeIn("slow");            
+            $("#findDate").fadeOut("slow");
+            //$("#searchContainer").addClass("col-sm-5").removeClass("col-sm-9");
+            
+        }
+    })
 
-</table>
+    $("body").on("click", "#nameRef", function (event) {
+        event.preventDefault();        
+        $("#id-sortParam").val($(this).attr("data-item"));
+        $("#bntSearch").click();
+        if ($(this).attr("data-item") == "name_asc") {
+            $(this).attr("data-item", "name_desc");
+        } else {
+            $(this).attr("data-item", "name_asc")
+        }
+    })
+
+    $("body").on("click", "#customerRef", function (event) {
+        event.preventDefault();
+        $("#id-sortParam").val($(this).attr("data-item"));
+        $("#bntSearch").click();
+        if ($(this).attr("data-item") == "customer_asc") {
+            $(this).attr("data-item", "customer_desc");
+        } else {
+            $(this).attr("data-item", "customer_asc")
+        }
+    })
+
+    $("body").on("click", "#executorRef", function (event) {
+        event.preventDefault();
+        $("#id-sortParam").val($(this).attr("data-item"));
+        $("#bntSearch").click();
+        if ($(this).attr("data-item") == "executor_asc") {
+            $(this).attr("data-item", "executor_desc");
+        } else {
+            $(this).attr("data-item", "executor_asc")
+        }
+    })
+
+    $("body").on("click", "#dateBeginRef", function (event) {
+        event.preventDefault();
+        $("#id-sortParam").val($(this).attr("data-item"));
+        $("#bntSearch").click();
+        if ($(this).attr("data-item") == "date_begin_asc") {
+            $(this).attr("data-item", "date_begin_desc");
+        } else {
+            $(this).attr("data-item", "date_begin_asc")
+        }
+    })
+
+    $("body").on("click", "#dateEndRef", function (event) {
+        event.preventDefault();
+        $("#id-sortParam").val($(this).attr("data-item"));
+        $("#bntSearch").click();
+        if ($(this).attr("data-item") == "date_end_asc") {
+            $(this).attr("data-item", "date_end_desc");
+        } else {
+            $(this).attr("data-item", "date_end_asc")
+        }
+    })
+
+    $("body").on("click", "#priorityRef", function (event) {
+        event.preventDefault();
+        $("#id-sortParam").val($(this).attr("data-item"));
+        $("#bntSearch").click();
+        if ($(this).attr("data-item") == "priority_asc") {
+            $(this).attr("data-item", "priority_desc");
+        } else {
+            $(this).attr("data-item", "priority_asc")
+        }
+    })
+
+    $("body").on("click", "#headRef", function (event) {
+        event.preventDefault();
+        $("#id-sortParam").val($(this).attr("data-item"));
+        $("#bntSearch").click();
+        if ($(this).attr("data-item") == "head_asc") {
+            $(this).attr("data-item", "head_desc");
+        } else {
+            $(this).attr("data-item", "head_asc")
+        }
+    })
+</script>

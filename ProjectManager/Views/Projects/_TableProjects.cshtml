@@ -1,0 +1,19 @@
+﻿<div class="container body-content">
+@using ProjectManager.Models
+@model IEnumerable<Projects>
+
+@foreach (Projects project in Model)
+{
+    <tr>
+        <td>@project.Name</td>
+        <td>@project.Customer</td>
+        <td>@project.Executor</td>
+        <td>@project.BeginDate</td>
+        <td>@project.EndDate</td>
+        <td>@project.Priority</td>
+        <td>@project.Users.FullName</td>
+        <td><a href="/Projects/Edit/@project.ProjectID">Редактировать</a> | <a href="/Projects/Details/@project.ProjectID">Детали</a> | <a href="/Projects/Delete/@project.ProjectID">Удалить</a></td>
+    </tr>
+}
+    </div>
+

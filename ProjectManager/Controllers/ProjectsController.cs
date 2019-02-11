@@ -21,6 +21,13 @@ namespace ProjectManager.Controllers
             return View(projects.ToList());
         }
 
+        [HttpPost]
+        public ActionResult Index(string filter)
+        {
+            ViewBag.filter = filter;
+            return View();
+        }
+
         // GET: Projects/Details/5
         public ActionResult Details(int? id)
         {
@@ -33,7 +40,7 @@ namespace ProjectManager.Controllers
             {
                 return HttpNotFound();
             }
-
+            // Убираем добавленных сотрудников из списка выбора, для избежания повторного добавления в проект сраницы "Детали"
             List<int> ID = db.Executors.Where(u => u.ProjectID == projects.ProjectID).Select(s => s.UserID).ToList();
             List<Users> usersToExcept = db.Users.ToList();
             List<Users> usersExcepted = db.Users.ToList();
@@ -51,6 +58,7 @@ namespace ProjectManager.Controllers
         public ActionResult Create()
         {
             ViewBag.UserID = new SelectList(db.Users, "UserID", "FullName");
+            ViewBag.Priority = 9;
             return View();
         }
 
@@ -84,7 +92,7 @@ namespace ProjectManager.Controllers
             {
                 return HttpNotFound();
             }
-            ViewBag.UserID = new SelectList(db.Users, "UserID", "FirstName", projects.UserID);
+            ViewBag.UserID = new SelectList(db.Users, "UserID", "FullName", projects.UserID);
             return View(projects);
         }
 
@@ -130,17 +138,153 @@ namespace ProjectManager.Controllers
             db.SaveChanges();
             return RedirectToAction("Index");
         }
-
+        // Заполняем DropDownList сотрудниками при добавлении в проект
         public ActionResult GetItems(int projectId)
         {
             List<int> ID = db.Executors.Where(u => u.ProjectID == projectId).Select(s => s.UserID).ToList();
+            // Убираем добавленных сотрудников из списка выбора, для избежания повторного добавления в проект сраницы "Детали"
             List<Users> usersToExcept = db.Users.ToList();
             List<Users> usersExcepted = db.Users.ToList();
             foreach (int i in ID)
             {
                 usersToExcept.Remove(usersExcepted.Where(u => u.UserID == i).FirstOrDefault());
-            }          
-            return PartialView("GetItems", usersToExcept);
+            }
+            if (usersToExcept.Count != 0)
+            {
+                return PartialView("GetItems", usersToExcept);
+            }else
+            {
+                return new EmptyResult();
+            }
+        }
+
+        // Сортировка и поиск по полям
+        public ActionResult GetProjects(string filter = null, string searchBy = null, string filterBeginDate = null, string filterEndDate = null, string sortParam = null)
+        {
+            List<Projects> projects = new List<Projects>();
+            string NameSort = String.IsNullOrEmpty(sortParam) ? "name_desc" : "";
+            string CustomerSort = sortParam == "Customer" ? "customer_desc" : "Customer";
+            switch (searchBy)
+            {
+                case "Наименование":
+                   projects = db.Projects.Where(x => x.Name.Contains(filter)).ToList();
+                    break;
+                case "Заказчик":
+                    projects = db.Projects.Where(x => x.Customer.Contains(filter)).ToList();
+                    break;
+                case "Исполнитель":
+                    projects = db.Projects.Where(x => x.Executor.Contains(filter)).ToList();
+                    break;
+                case "Дата начала":
+                    if(filterBeginDate =="" || filterEndDate == "")
+                    {
+                        projects = db.Projects.ToList();
+                    } else
+                    {
+                        DateTime beginDate = filterBeginDate == null ? new DateTime() : Convert.ToDateTime(filterBeginDate);
+                        DateTime endDate = Convert.ToDateTime(filterEndDate);
+                        projects = db.Projects.Where(x => x.BeginDate >= beginDate && x.BeginDate <= endDate).ToList();
+                    }
+                    break;
+
+                case "Дата окончания":
+                    if (filterBeginDate == "" || filterEndDate == "")
+                    {
+                        projects = db.Projects.ToList();
+                    } else
+                    {
+                        DateTime beginDate = Convert.ToDateTime(filterBeginDate);
+                        DateTime endDate = Convert.ToDateTime(filterEndDate);
+                        projects = db.Projects.Where(x => x.EndDate >= beginDate && x.EndDate <= endDate).ToList();
+                    }
+                        
+                    break;
+                default:
+                    projects = db.Projects.ToList();
+                    break;
+            }
+
+            return PartialView("_TableProjects", OrderEntity(projects, sortParam));
+        }
+        // Метод дл сортировки полей. 
+        public List<Projects> OrderEntity(List<Projects> pr, string srt)
+        {
+            List<Projects> projects;
+            switch (srt)
+            {
+                case "name_desc":
+                    projects = pr.OrderByDescending(s => s.Name).ToList();
+                    break;
+                case "customer_asc":
+                    projects = pr.OrderBy(s => s.Customer).ToList();
+                    break;
+                case "customer_desc":
+                    projects = pr.OrderByDescending(s => s.Customer).ToList();
+                    break;
+                case "executor_asc":
+                    projects = pr.OrderBy(s => s.Executor).ToList();
+                    break;
+                case "executor_desc":
+                    projects = pr.OrderByDescending(s => s.Executor).ToList();
+                    break;
+                case "date_begin_asc":
+                    projects = pr.OrderBy(s => s.BeginDate).ToList();
+                    break;
+                case "date_begin_desc":
+                    projects = pr.OrderByDescending(s => s.BeginDate).ToList();
+                    break;
+                case "date_end_asc":
+                    projects = pr.OrderBy(s => s.EndDate).ToList();
+                    break;
+                case "date_end_desc":
+                    projects = pr.OrderByDescending(s => s.EndDate).ToList();
+                    break;
+                case "priority_asc":
+                    projects = pr.OrderBy(s => s.Priority).ToList();
+                    break;
+                case "priority_desc":
+                    projects = pr.OrderByDescending(s => s.Priority).ToList();
+                    break;
+                case "head_asc":
+                    projects = pr.OrderBy(s => s.Users.FullName).ToList();
+                    break;
+                case "head_desc":
+                    projects = pr.OrderByDescending(s => s.Users.FullName).ToList();
+                    break;
+                default:
+                    projects = pr.OrderBy(s => s.Name).ToList();
+                    break;
+            }
+            return projects;
+        }
+        // Проверяем поле "Приоритет", чтобыоно не было отрицательным или не равен нулю
+        public JsonResult IsPositive(int priority)
+        {            
+            if(priority <= 0)
+                return Json("Введите положительное число!", JsonRequestBehavior.AllowGet);
+            return Json( true, JsonRequestBehavior.AllowGet);
+        }
+
+        // Находим максимальное значение поля "Приоритет".
+        public JsonResult GetMaxPriority()
+        {
+            int maxPriority = db.Projects.Max(c => c.Priority);
+            
+                return Json(++maxPriority, JsonRequestBehavior.AllowGet);            
+        }
+        // Отслеживаем, чтобы введенное на страницах "Создание" и "Редактирование" проектов, поле "Приоритет" был последовательным.
+        // Сделано для правильной логики уменьшения или увеличивания приоритета.
+        public JsonResult CheckPriority(int pr)
+        {
+            int maxPriority = db.Projects.Max(c => c.Priority);
+            if(pr - maxPriority > 1)
+            {
+                return Json(new { res = false, max = maxPriority }, JsonRequestBehavior.AllowGet);
+            } else
+            {
+                return Json(true, JsonRequestBehavior.AllowGet);
+            }
+            
         }
 
         protected override void Dispose(bool disposing)
